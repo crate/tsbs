@@ -90,6 +90,8 @@ func (p *processor) InsertBatch(table string, rows []*row) uint64 {
 	for _, row := range rows {
 		b.Queue(table, *row, nil, nil)
 		// a number of metric values is all row values minus tags and timestamp
+		// this is required by the framework to count the number of inserted
+		// metric values
 		metricCnt += uint64(len(*row) - 2)
 	}
 	err := b.Send(context.Background(), nil)
