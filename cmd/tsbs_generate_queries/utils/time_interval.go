@@ -64,3 +64,13 @@ func (ti *TimeInterval) StartUnixNano() int64 {
 func (ti *TimeInterval) EndUnixNano() int64 {
 	return ti.End.UTC().UnixNano()
 }
+
+// StartUnixMillis returns the start time as milliseconds.
+func (ti *TimeInterval) StartUnixMillis() int64 {
+	return ti.Start.UTC().UnixNano() / int64(time.Millisecond)
+}
+
+// EndUnixMillis returns the end time as milliseconds.
+func (ti *TimeInterval) EndUnixMillis() int64 {
+	return ti.End.UTC().UnixNano() / int64(time.Millisecond)
+}
