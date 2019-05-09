@@ -12,6 +12,7 @@ Current databases supported:
 + Cassandra [(supplemental docs)](docs/cassandra.md)
 + ClickHouse [(supplemental docs)](docs/clickhouse.md)
 + SiriDB [(supplemental docs)](docs/siridb.md)
++ CrateDB [(supplemental docs)](docs/cratedb.md)
 
 ## Overview
 
@@ -101,7 +102,9 @@ Variables needed:
 1. a start time for the data's timestamps. E.g., `2016-01-01T00:00:00Z`
 1. an end time. E.g., `2016-01-04T00:00:00Z`
 1. how much time should be between each reading per device, in seconds. E.g., `10s`
-1. and which database(s) you want to generate for. E.g., `timescaledb` (choose from `cassandra`, `clickhouse`, `influx`, `mongo`, `siridb` or `timescaledb`)
+1. and which database(s) you want to generate for. E.g., `timescaledb`
+ (choose from `cassandra`, `clickhouse`, `influx`, `mongo`, `siridb`, `cratedb`
+  or `timescaledb`)
 
 Given the above steps you can now generate a dataset (or multiple
 datasets, if you chose to generate for multiple databases) that can
