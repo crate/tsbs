@@ -108,6 +108,10 @@ func parseTime(v string) (time.Time, error) {
 func parseMetrics(values []string) (row, error) {
 	metrics := make(row, len(values))
 	for i := range values {
+		if values[i] == "" {
+			metrics[i] = nil
+			continue
+		}
 		metric, err := strconv.ParseFloat(values[i], 64)
 		if err != nil {
 			return nil, err

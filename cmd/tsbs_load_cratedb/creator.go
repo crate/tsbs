@@ -124,10 +124,12 @@ func (d *dbCreator) CreateDB(dbName string) error {
 func (d *dbCreator) createMetricsTable(table *tableDef) error {
 	var tagsObjectChildCols []string
 	for _, column := range table.tags {
+		res := strings.Split(column, " ")
 		tagsObjectChildCols = append(
 			tagsObjectChildCols,
-			fmt.Sprintf("%s %s", column, "string"))
+			fmt.Sprintf("%s %s", res[0], "text"))
 	}
+
 
 	var metricCols []string
 	for _, column := range table.cols {
