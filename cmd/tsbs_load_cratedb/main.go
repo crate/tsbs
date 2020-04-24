@@ -71,7 +71,7 @@ func main() {
 	}
 
 	hosts := viper.GetString("hosts")
-	port := viper.GetUint("port")
+	port := viper.GetString("port")
 	user := viper.GetString("user")
 	pass := viper.GetString("pass")
 
@@ -80,12 +80,8 @@ func main() {
 
 	loader = load.GetBenchmarkRunner(config)
 
-	connConfig, _ := pgx.ParseConfig("")
-	connConfig.Host = hosts
-	connConfig.Port = uint16(port)
-	connConfig.User = user
-	connConfig.Password = pass
-	connConfig.Database = "doc"
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, pass, hosts, port, "doc")
+	connConfig, _ := pgx.ParseConfig(connectionString)
 
 	// TODO implement or check if anything has to be done to support WorkerPerQueue mode
 	loader.RunBenchmark(&benchmark{dbc: &dbCreator{

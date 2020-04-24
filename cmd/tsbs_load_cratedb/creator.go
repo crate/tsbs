@@ -145,7 +145,7 @@ func (d *dbCreator) createMetricsTable(table *tableDef) error {
 			ts timestamp,
 			%s
 		) CLUSTERED INTO %d SHARDS
-		WITH (number_of_replicas = %d)`,
+		WITH (number_of_replicas = %d, "translog.durability" = 'ASYNC')`,
 		table.fqn(),
 		strings.Join(tagsObjectChildCols, ", "),
 		strings.Join(metricCols, ", "),

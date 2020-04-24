@@ -21,12 +21,11 @@ func (p *processor) Init(workerNum int, doLoad bool) {
 	if !doLoad {
 		return
 	}
-
 	p.stmts = make(map[string]string)
 
 	poolConfig, _ := pgxpool.ParseConfig("")
 	poolConfig.ConnConfig = p.connCfg
-	poolConfig.MaxConns = int32(4) //workerNum is a number from 0 to NUM_WORKES but 0 is not a valid value for MaxConns
+	poolConfig.MaxConns = 4 //workerNum is a number from 0 to NUM_WORKES but 0 is not a valid value for MaxConns
 
 	pool, err := pgxpool.ConnectConfig(context.Background(), poolConfig)
 	if err != nil {
