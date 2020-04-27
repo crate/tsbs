@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/timescale/tsbs/internal/utils"
@@ -38,7 +37,7 @@ func (b *benchmark) GetPointIndexer(maxPartitions uint) load.PointIndexer {
 func (b *benchmark) GetProcessor() load.Processor {
 	return &processor{
 		tableDefs: b.dbc.tableDefs,
-		connCfg:   b.dbc.cfg,
+		connStr:   b.dbc.connStr,
 	}
 }
 
@@ -80,12 +79,11 @@ func main() {
 
 	loader = load.GetBenchmarkRunner(config)
 
-	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, pass, hosts, port, "doc")
-	connConfig, _ := pgx.ParseConfig(connectionString)
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?pool_max_conns=%d", user, pass, hosts, port, "doc", loader.Workers)
 
 	// TODO implement or check if anything has to be done to support WorkerPerQueue mode
 	loader.RunBenchmark(&benchmark{dbc: &dbCreator{
-		cfg:         connConfig,
+		connStr: 	connectionString,
 		numReplicas: *numReplicas,
 		numShards:   *numShards,
 	}}, load.SingleQueue)

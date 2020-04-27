@@ -23,9 +23,9 @@ func (t *tableDef) fqn() string {
 }
 
 type dbCreator struct {
+	connStr 	string
 	tableDefs []*tableDef
-	cfg       *pgx.ConnConfig
-	conn      *pgx.Conn
+	conn     *pgx.Conn
 
 	// common parameters for all metrics table
 	numShards   int
@@ -42,7 +42,8 @@ func (d *dbCreator) Init() {
 	}
 	d.tableDefs = tableDefs
 
-	conn, err := pgx.ConnectConfig(context.Background(), d.cfg)
+	connConfig, _ := pgx.ParseConfig(d.connStr)
+	conn, err := pgx.ConnectConfig(context.Background(), connConfig)
 	if err != nil {
 		fatal("Cannot establish a connection to database: %v", err)
 		panic(err)
