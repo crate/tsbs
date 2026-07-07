@@ -196,7 +196,9 @@ func (d *dbCreator) createTableAndIndexes(dbBench *sql.DB, tableName string, fie
 
 	if d.opts.UseHypertable {
 		var creationCommand string = "create_hypertable"
-		var partitionsOption string = "replication_factor => NULL"
+		// TimescaleDB >= 2.14 removed multi-node and with it the
+		// replication_factor parameter, so it is only passed when set.
+		var partitionsOption string = ""
 
 		MustExec(dbBench, "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE")
 
@@ -221,8 +223,11 @@ func (d *dbCreator) createTableAndIndexes(dbBench *sql.DB, tableName string, fie
 			partitionsOption = fmt.Sprintf("partitioning_column => '%s'::name, replication_factor => %v::smallint", partitionColumn, d.opts.ReplicationFactor)
 		}
 
+		if partitionsOption != "" {
+			partitionsOption += ", "
+		}
 		MustExec(dbBench,
-			fmt.Sprintf("SELECT %s('%s'::regclass, 'time'::name, %s, chunk_time_interval => %d, create_default_indexes=>FALSE)",
+			fmt.Sprintf("SELECT %s('%s'::regclass, 'time'::name, %schunk_time_interval => %d, create_default_indexes=>FALSE)",
 				creationCommand, tableName, partitionsOption, d.opts.ChunkTime.Nanoseconds()/1000))
 	}
 }
