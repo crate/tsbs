@@ -153,8 +153,13 @@ func (d *Devops) LastPointPerHost(qi query.Query) {
 // high-cpu-all
 func (d *Devops) HighCPUForHosts(qi query.Query, nHosts int) {
 	interval := d.Interval.MustRandWindow(devops.HighCPUDuration)
-	hosts, err := d.GetRandomHosts(nHosts)
-	panicIfErr(err)
+
+	var hostWhereClause string
+	if nHosts > 0 {
+		hosts, err := d.GetRandomHosts(nHosts)
+		panicIfErr(err)
+		hostWhereClause = fmt.Sprintf("AND %s IN ('%s')", hostnameField, strings.Join(hosts, "', '"))
+	}
 
 	sql := fmt.Sprintf(`
 		SELECT *
@@ -162,11 +167,10 @@ func (d *Devops) HighCPUForHosts(qi query.Query, nHosts int) {
 		WHERE usage_user > 90.0
 		  AND ts >= %d
 		  AND ts < %d
-		  AND %s IN ('%s')`,
+		  %s`,
 		interval.StartUnixMillis(),
 		interval.EndUnixMillis(),
-		hostnameField,
-		strings.Join(hosts, "', '"))
+		hostWhereClause)
 
 	humanLabel, err := devops.GetHighCPULabel("CrateDB", nHosts)
 	panicIfErr(err)
