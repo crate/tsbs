@@ -128,16 +128,21 @@ func (d *Devops) GroupByOrderByLimit(qi query.Query) {
 
 // LastPointPerHost finds the last row for every host in the dataset
 func (d *Devops) LastPointPerHost(qi query.Query) {
+	metrics := devops.GetAllCPUMetrics()
+	selectClauses := make([]string, len(metrics))
+	for i, m := range metrics {
+		selectClauses[i] = fmt.Sprintf("max_by(%[1]s, ts) AS %[1]s", m)
+	}
+
 	sql := fmt.Sprintf(`
-		SELECT *
-		FROM
-		  (
-			SELECT %[1]s AS host, max(ts) AS max_ts
-			FROM cpu
-			GROUP BY %[1]s
-		  ) t, cpu c
-		WHERE t.max_ts = c.ts
-		  AND t.host = c.%[1]s`, hostnameField)
+		SELECT
+			%s AS host,
+			max(ts) AS max_ts,
+			%s
+		FROM cpu
+		GROUP BY host`,
+		hostnameField,
+		strings.Join(selectClauses, ",\n\t\t\t"))
 
 	humanLabel := "CrateDB last row per host"
 	humanDesc := humanLabel
@@ -153,8 +158,13 @@ func (d *Devops) LastPointPerHost(qi query.Query) {
 // high-cpu-all
 func (d *Devops) HighCPUForHosts(qi query.Query, nHosts int) {
 	interval := d.Interval.MustRandWindow(devops.HighCPUDuration)
-	hosts, err := d.GetRandomHosts(nHosts)
-	panicIfErr(err)
+
+	var hostWhereClause string
+	if nHosts > 0 {
+		hosts, err := d.GetRandomHosts(nHosts)
+		panicIfErr(err)
+		hostWhereClause = fmt.Sprintf("AND %s IN ('%s')", hostnameField, strings.Join(hosts, "', '"))
+	}
 
 	sql := fmt.Sprintf(`
 		SELECT *
@@ -162,11 +172,10 @@ func (d *Devops) HighCPUForHosts(qi query.Query, nHosts int) {
 		WHERE usage_user > 90.0
 		  AND ts >= %d
 		  AND ts < %d
-		  AND %s IN ('%s')`,
+		  %s`,
 		interval.StartUnixMillis(),
 		interval.EndUnixMillis(),
-		hostnameField,
-		strings.Join(hosts, "', '"))
+		hostWhereClause)
 
 	humanLabel, err := devops.GetHighCPULabel("CrateDB", nHosts)
 	panicIfErr(err)

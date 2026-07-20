@@ -170,15 +170,21 @@ func TestDevopsLastPointPerHostQuery(t *testing.T) {
 	want := &query.CrateDB{
 		Table: []byte("cpu"),
 		SqlQuery: []byte(`
-		SELECT *
-		FROM
-		  (
-			SELECT tags['hostname'] AS host, max(ts) AS max_ts
-			FROM cpu
-			GROUP BY tags['hostname']
-		  ) t, cpu c
-		WHERE t.max_ts = c.ts
-		  AND t.host = c.tags['hostname']`),
+		SELECT
+			tags['hostname'] AS host,
+			max(ts) AS max_ts,
+			max_by(usage_user, ts) AS usage_user,
+			max_by(usage_system, ts) AS usage_system,
+			max_by(usage_idle, ts) AS usage_idle,
+			max_by(usage_nice, ts) AS usage_nice,
+			max_by(usage_iowait, ts) AS usage_iowait,
+			max_by(usage_irq, ts) AS usage_irq,
+			max_by(usage_softirq, ts) AS usage_softirq,
+			max_by(usage_steal, ts) AS usage_steal,
+			max_by(usage_guest, ts) AS usage_guest,
+			max_by(usage_guest_nice, ts) AS usage_guest_nice
+		FROM cpu
+		GROUP BY host`),
 	}
 
 	got := &query.CrateDB{}

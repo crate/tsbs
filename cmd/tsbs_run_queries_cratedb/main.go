@@ -63,11 +63,11 @@ func init() {
 }
 
 func main() {
-	processor, err := newProcessor()
-	if err != nil {
-		panic(err)
-	}
 	runner.Run(&query.CrateDBPool, func() query.Processor {
+		processor, err := newProcessor()
+		if err != nil {
+			panic(err)
+		}
 		return processor
 	})
 }
